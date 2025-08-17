@@ -38,6 +38,11 @@ const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
 enum EfiStatus {
     Success = 0,
 }
+
+
+#[repr(i64)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
 pub enum EfiMemoryType {
     RESERVED = 0,
     LOADER_CODE,
@@ -55,10 +60,26 @@ pub enum EfiMemoryType {
     PAL_CODE,
     PERSISTENT_MEMORY,
 }
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+struct EfiMemoryDescriptor {
+    memory_type: EfiMemoryType,
+    physical_start: u64,
+    virtual_start: u64,
+    number_of_pages: u64,
+    attribute: u64,
+}
 
-#[repr(i64)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(non_camel_case_types)]
+const MEMORY_MAP_BUFFER_SIZE: usize = 0x8000;
+
+struct MemoryMapHolder {
+    memory_map_buffer: [u8; MEMORY_MAP_BUFFER_SIZE],
+    memory_map_size: usize,
+    map_key: u64,
+    descriptor_size: usize,
+    descriptor_version: u32,
+}
+
 
 
 #[repr(C)]
