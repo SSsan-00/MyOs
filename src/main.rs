@@ -38,6 +38,28 @@ const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
 enum EfiStatus {
     Success = 0,
 }
+pub enum EfiMemoryType {
+    RESERVED = 0,
+    LOADER_CODE,
+    LOADER_DATA,
+    BOOT_SERVICES_CODE,
+    BOOT_SERVICES_DATA,
+    RUNTIME_SERVICES_CODE,
+    RUNTIME_SERVICES_DATA,
+    CONVENTIONAL_MEMORY,
+    UNUSABLE_MEMORY,
+    ACPI_RECLAIM_MEMORY,
+    ACPI_MEMORY_NVS,
+    MEMORY_MAPPED_IO,
+    MEMORY_MAPPED_IO_PORT_SPACE,
+    PAL_CODE,
+    PERSISTENT_MEMORY,
+}
+
+#[repr(i64)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
+
 
 #[repr(C)]
 struct EfiBootServicesTable {
