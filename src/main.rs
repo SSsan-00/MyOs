@@ -74,7 +74,7 @@ const MEMORY_MAP_BUFFER_SIZE: usize = 0x8000;
 struct MemoryMapHolder {
     memory_map_buffer: [u8; MEMORY_MAP_BUFFER_SIZE],
     memory_map_size: usize,
-    map_key: u64,
+    map_key: usize,
     descriptor_size: usize,
     descriptor_version: u32,
 }
@@ -244,6 +244,13 @@ fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let mut w = VramTextWriter::new(&mut vram);
     for i in 0..4 {
         writeln!(w, "i = {i}").unwrap();
+    }
+
+    let mut memory_map = MemoryMapHolder::new();
+    let status = unsafe { (*efi_system_table.boot_services).get_memory_map(&mut memory_map) };
+    writeln!(w, "{status:?}").unwrap();
+    for e in memory_map.iter() {
+        writeln!(w, "{e:?}").unwrap();
     }
 
     //println!("Hello World!");
