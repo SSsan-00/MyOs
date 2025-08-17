@@ -39,7 +39,6 @@ enum EfiStatus {
     Success = 0,
 }
 
-
 #[repr(i64)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
@@ -80,17 +79,72 @@ struct MemoryMapHolder {
     descriptor_version: u32,
 }
 
+struct MemoryMapIterator<'a> {
+    map: &'a MemoryMapHolder,
+    ofs: usize,
+}
 
+impl<'a> Iterator for MemoryMapIterator<'a> {
+    type Item = &'a EfiMemoryDescriptor;
+    fn next(&mut self) -> Option<&'a EfiMemoryDescriptor> {
+        if self.ofs >= self.map.memory_map_size {
+            None
+        } else {
+            let e: &EfiMemoryDescriptor = unsafe {
+                &*(self.map.memory_map_buffer.as_ptr().add(self.ofs) as *const EfiMemoryDescriptor)
+            };
+            self.ofs += self.map.descriptor_size;
+            Some(e)
+        }
+    }
+}
+
+impl MemoryMapHolder {
+    pub const fn new() -> MemoryMapHolder {
+        MemoryMapHolder {
+            memory_map_buffer: [0; MEMORY_MAP_BUFFER_SIZE],
+            memory_map_size: MEMORY_MAP_BUFFER_SIZE,
+            map_key: 0,
+            descriptor_size: 0,
+            descriptor_version: 0,
+        }
+    }
+    pub fn iter(&self) -> MemoryMapIterator {
+        MemoryMapIterator { map: self, ofs: 0 }
+    }
+}
 
 #[repr(C)]
 struct EfiBootServicesTable {
-    _reserved0: [u64; 40],
+    _reserved0: [u64; 7],
+    get_memory_map: extern "win64" fn(
+        memory_map_size: *mut usize,
+        memory_map: *mut u8,
+        map_key: *mut usize,
+        descriptor_size: *mut usize,
+        descriptor_version: *mut u32,
+    ) -> EfiStatus,
+    _reserved1: [u64; 32],
     locate_protocol: extern "win64" fn(
         protocol: *const EfiGuid,
         registration: *const EfiVoid,
         interface: *mut *mut EfiVoid,
     ) -> EfiStatus,
 }
+
+impl EfiBootServicesTable {
+    fn get_memory_map(&self, map: &mut MemoryMapHolder) -> EfiStatus {
+        (self.get_memory_map)(
+            &mut map.memory_map_size,
+            map.memory_map_buffer.as_mut_ptr(),
+            &mut map.map_key,
+            &mut map.descriptor_size,
+            &mut map.descriptor_version,
+        )
+    }
+}
+
+const _: () = assert!(offset_of!(EfiBootServicesTable, get_memory_map) == 56);
 const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
 
 #[repr(C)]
