@@ -43,7 +43,7 @@ const _: () = assert!(HEADER_SIZE = 32);
 // HEADER_SIZEが2のべき乗であることを確認
 const _: () = assert!(HEADER_SIZE.count_ones() == 1);
 pub const LAYOUT_PAGE_4K: Layout =
-// 4096バイト、アライメント4096バイト = 4KBページ
+// サイズ4096バイト、アライメント4096バイト = 4KBページ
     unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
 
 impl Header {

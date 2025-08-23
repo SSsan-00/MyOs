@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+// nightly機能のoffset_of!マクロを有効化
 #![feature(offset_of)]
 
 use core::fmt::Write;
@@ -65,6 +66,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     }
 }
 
+// panic_handler属性をつけることで、パニック時に呼び出される関数を定義できる
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     exit_qemu(QemuExitCode::Fail)

@@ -2,6 +2,7 @@ use crate::graphics::draw_font_fg;
 use crate::graphics::Bitmap;
 use crate::result::Result;
 use core::fmt;
+// 構造体のフィールドのオフセットを取得するマクロ
 use core::mem::offset_of;
 use core::mem::size_of;
 use core::ptr::null_mut;
@@ -173,7 +174,9 @@ impl EfiSystemTable {
     }
 }
 
+// C言語互換にするための属性
 #[repr(C)]
+// :? を用いてデバッグ表示を可能にする
 #[derive(Debug)]
 struct EfiGraphicsOutputProtocolPixelInfo {
     pub version: u32,
