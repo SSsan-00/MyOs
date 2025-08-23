@@ -15,3 +15,9 @@ use core::mem::size_of;
 use core::ops::DerefMut;
 use core::ptr::null_mut;
 
+pub fn round_up_to_nearest_pow2(v: usize) -> Result<usize> {
+    1usize
+        .checked_sh1(usize::BITS - v.leading_zeros())
+        .ok_or("Out of range")
+}
+
