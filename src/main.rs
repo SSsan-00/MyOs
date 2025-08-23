@@ -19,6 +19,7 @@ use wasabi::uefi::MemoryMapHolder;
 use wasabi::uefi::VramTextWriter;
 use wasabi::x86::hlt;
 
+// no_mangle: エントリポイントを正しく名前解決するために名前修飾を行わない
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
