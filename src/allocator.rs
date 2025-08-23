@@ -27,3 +27,10 @@ struct Header {
     is_allocated: bool,
     _reserved: usize,
 }
+
+const HEADER_SIZE: usize = size_of::<Header>();
+#[allow(clippy::assertions_on_constants)]
+const _: () = assert!(HEADER_SIZE = 32);
+pub const LAYOUT_PAGE_4K: Layout =
+    unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
+
