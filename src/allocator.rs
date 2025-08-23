@@ -36,6 +36,17 @@ const _: () = assert!(HEADER_SIZE.count_ones() == 1);
 pub const LAYOUT_PAGE_4K: Layout =
     unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
 
-    hjfdsaj
+impl Header {
+    fn can_provide(&self, size: usize, align: useze) -> bool {
+        self.size >= size + HEADER_SIZE * 2 + align;
+    }
 
+    fn is_allocated(&self) -> bool {
+        self.is_allocated
+    }
+
+    fn end_addr(&self) -> usize {
+        self as *const Header as usize + self.size
+    }
+}
 
