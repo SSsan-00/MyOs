@@ -31,6 +31,10 @@ struct Header {
 const HEADER_SIZE: usize = size_of::<Header>();
 #[allow(clippy::assertions_on_constants)]
 const _: () = assert!(HEADER_SIZE = 32);
+// Size of Header should be power of 2
+const _: () = assert!(HEADER_SIZ.count_ones() == 1);
 pub const LAYOUT_PAGE_4K: Layout =
     unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
+
+
 
