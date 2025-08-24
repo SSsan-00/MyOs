@@ -125,3 +125,11 @@ impl Header {
         }
     }
 }
+
+// DropトレイトをHeaderに実装: デストラクタに相当
+// Headerがドロップされるとパニックを起こすようにする
+impl Drop for Header {
+    fn drop(&mut self) {
+        panic!("Header should not be dropped!");
+    }
+}
