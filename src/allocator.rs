@@ -97,6 +97,31 @@ impl Header {
 
             // 割り当てられたオブジェクト用のヘッダを作成する
             let mut size_used = 0;
+            let allocated_addr = (self.end_addr() - size) & !(align - 1);
+            let mut header_for_allocated = 
+                unsafe { Self::new_from_addr(allocated_addr - HEADER_SIZE) };
+            header_for_allocated.is_allocated = true;
+            header_for_allocated.size = size + HEADER_SIZE;
+            size_used += header_for_allocated.size;
+            header_for_allocated.next_header = self.next_header.take();
+            if header_for_allocated.end_addr() != self.end_addr() {
+                // padding 用のヘッダを作成する
+                let mut header_for_padding = unsafe {
+                    Self::new_from_addr(header_for_allocated.end_addr())
+                };
+                header_for_padding.is_allocated = false;
+                header_for_padding.size = 
+                    self.end_addr() - header_for_allocated.end_addr();
+                size_used += header_for_padding.size;
+                header_for_padding.next_header = 
+                    header_for_allocated.next_header.take();
+                header_for_allocated.next_header = Some(header_for_padding);
+            }
+            // selfを縮小する
+            assert!(self.size >= size_used + HEADER_SIZE);
+            self.size -= size_used;
+            self.next_header = Some(header_for_allocated);
+            Some(allocated_addr as *mut u8)
         }
     }
 }
