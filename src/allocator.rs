@@ -6,7 +6,7 @@ use crate::uefi::EfiMemoryType;
 use crate::uefi::MemoryMapHolder;
 use alloc::alloc::GlobalAlloc;
 use alloc::alloc::Layout;
-//  大きなデータや可変超データをヒープ領域で管理するための型
+//  大きなデータや可変長データをヒープ領域で管理するための型
 use alloc::boxed::Box;
 use core::borrow::BorrowMut;
 use core::cell::RefCell;
@@ -43,7 +43,7 @@ const _: () = assert!(HEADER_SIZE = 32);
 // HEADER_SIZEが2のべき乗であることを確認
 const _: () = assert!(HEADER_SIZE.count_ones() == 1);
 pub const LAYOUT_PAGE_4K: Layout =
-// サイズ4096バイト、アライメント4096バイト = 4KBページ
+    // サイズ4096バイト、アライメント4096バイト = 4KBページ
     unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
 
 impl Header {
@@ -69,7 +69,33 @@ impl Header {
         });
         Box::from_raw(addr as *mut Header)
     }
-}
+    // Note: std::alloc::Layout doc says:
+    // > すべてのレイアウトは、対応するサイズと 2 のべき乗のアライメントを持つ。
+    fn provide(&mut self, size: usize, align: usize) -> Option<*mut u8> {
+        // max: 大きい方を返す
+        let size = max(round_ip_up_to_nearest_pow2(size).ok()?, HEADER_SIZE);
+        let align = max(align, HEADER_SIZE);
+        if self.is_allocated() || !self.can_provide(size, align) {
+            None
+        } else {
+            // 各文字は 32 バイトのチャンクを表す
+            // Note: std::alloc::Layout doc says:
+            // > すべてのレイアウトは、対応するサイズと 2 のべき乗のアライメントを持つ。
+            //
+            // |-----|----------------- self ---------|----------
+            // |-----|----------------------          |----------
+            //                                        ^ self.end_addr()
+            //                              |-------|-
+            //                              ^ header_for_allocated
+            //                               ^ allocated_addr
+            //                                      ^ header_for_padding
+            //                                      ^
+            // header_for_allocated.end_addr() によって、
+            // self は要求されたオブジェクトを割り当てるのに十分な領域を持っている
+            //
+            // 割り当て対象のオブジェクト用のヘッダを作成する
 
-// Note: std::alloc::Layout doc says:
-// > すべてのレイアウトは、対応するサイズと 2 のべき乗のアライメントを持つ。
+            // 割り当てられたオブジェクト用のヘッダを作成する
+        }
+    }
+}
