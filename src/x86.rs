@@ -5,7 +5,5 @@ pub fn hlt() {
 }
 
 pub fn write_io_port_u8(port: u16, data: u8) {
-    unsafe {
-         asm!("out dx, al", in("al") data, in("dx") port) 
-        }
+    unsafe { asm!("out dx, al", in("al") data, in("dx") port) }
 }
