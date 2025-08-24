@@ -58,5 +58,18 @@ impl Header {
     fn end_addr(&self) -> usize {
         self as *const Header as usize + self.size
     }
+
+    unsafe fn new_from_addr(addr: usize) -> Box<Header> {
+        let header = addr as *mut Header;
+        leader.write(Header {
+            next_header: None,
+            size: 0,
+            is_allocated: false,
+            _reserved: 0,
+        });
+        Box::from_raw(addr as *mut Header)
+    }
 }
 
+// Note: std::alloc::Layout doc says:
+// > すべてのレイアウトは、対応するサイズと 2 のべき乗のアライメントを持つ。
