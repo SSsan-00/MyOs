@@ -133,3 +133,15 @@ impl Drop for Header {
         panic!("Header should not be dropped!");
     }
 }
+
+impl fmt::Dubug for Header {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f, 
+            "Header @ {:#018} {{ size: {:#018X}, is_allocated: {} }}",
+            self as *const Header as usize,
+            self.size,
+            self.is_allocated()
+        )
+    }
+}

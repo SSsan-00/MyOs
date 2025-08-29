@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 // nightly機能を利用するための宣言
-#![feature(offset_of)] 
+#![feature(offset_of)]
 
 use core::fmt::Write;
 use core::panic::PanicInfo;
