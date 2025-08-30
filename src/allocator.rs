@@ -156,3 +156,16 @@ pub static ALLOCATOR: firstFitAllocator = FirstFitAllocator {
 };
 
 unsafe impl Sync for FirstFitAllocator {}
+
+unsafe impl GlobalAlloc for FirstFitAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        self.alloc_with_options(layout)
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
+        let mut region = Header::from_allocated_region(ptr);
+        region.is_allocated = false;
+        Box::leak(region);
+        // region is leaked here to avoid dropping the free info on the memory
+    }
+}
