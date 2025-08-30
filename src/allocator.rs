@@ -134,7 +134,7 @@ impl Drop for Header {
     }
 }
 
-impl fmt::Dubug for Header {
+impl fmt::Debug for Header {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f, 
@@ -145,3 +145,14 @@ impl fmt::Dubug for Header {
         )
     }
 }
+
+pub struct  FirstFitAllocator {
+    firsr_header: RefCall<Option<Box<Header>>>,
+}
+
+#[global_allocator]
+pub static ALLOCATOR: firstFitAllocator = FirstFitAllocator {
+    first_header: RefCall::new(None),
+};
+
+unsafe impl Sync for FirstFitAllocator {}
