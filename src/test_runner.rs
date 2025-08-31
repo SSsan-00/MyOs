@@ -8,7 +8,6 @@ use core::panic::PanicInfo;
 pub trait Testable {
     fn run(&self, writer: &mut SerialPort);
 }
-
 impl<T> Testable for T
 where
     T: Fn(),
@@ -16,7 +15,7 @@ where
     fn run(&self, writer: &mut SerialPort) {
         writeln!(writer, "[RUNNING] >>> {}", type_name::<T>()).unwrap();
         self();
-        writeln!(writer, "[PASS   ] >>> {}", type_name::<T>()).unwrap();
+        writeln!(writer, "[PASS   ] <<< {}", type_name::<T>()).unwrap();
     }
 }
 
@@ -27,9 +26,8 @@ pub fn test_runner(tests: &[&dyn Testable]) -> ! {
         test.run(&mut sw);
     }
     writeln!(sw, "Completed {} tests!", tests.len()).unwrap();
-    exit_qemu(QemuExitCode::Success);
+    exit_qemu(QemuExitCode::Success)
 }
-
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     let mut sw = SerialPort::new_for_com1();

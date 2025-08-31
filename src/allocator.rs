@@ -20,13 +20,14 @@ use core::ptr::null_mut;
 pub fn round_up_to_nearest_pow2(v: usize) -> Result<usize> {
     1usize
         // leading_zeros() 整数を2進数で表した時に先頭に連続する0を返す
-        .checked_shl(usize::BITS - v.leading_zeros())
+        .checked_shl(usize::BITS - v.wrapping_sub(1).leading_zeros())
         .ok_or("Out of range")
 }
 
 #[test_case]
 fn round_up_to_nearest_pow2_tests() {
-    // unimplemented!("cargo test should fail, right...?")
+    assert_eq!(round_up_to_nearest_pow2(0), Err("Out of range"));
+    assert_eq!(round_up_to_nearest_pow2(1), Ok(1));
 }
 
 /// 垂直バー | は、ヘッダーを持つチャンクを表す

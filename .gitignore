@@ -5,3 +5,7 @@ node_modules/
 venv/
 .env
 *~
+/.vscode
+/log
+RELEASEX64_OVMF.fd*
+/mnt
