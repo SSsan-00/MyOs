@@ -199,6 +199,28 @@ impl FirstFitAllocator {
             self.add_free_from_description(e);
         }
     }
+
+    fn add_free_from_description(&self, desc: &EfiMemoryDescriptor) {
+        let mut start_addr = desc.physical_start() as usize;
+        let mut size = desc.number_of_pages() as usize * 4096;
+        // 0番地を避けてめもりを確保する
+        if start_addr == 0 {
+            start_addr += 4096;
+            size = size.saturating_sub(4096);
+        }
+        if start_addr <= 4096 {
+            return;
+        }
+        let mut header = unsafe { Header::new_from_addr(start_addr) };
+        header.next_header = None;
+        header.is_allocated = false;
+        header.size = size;
+        let mut first_header = self.first_header.borrow_mut();
+        let prev_last = first_header.replace(header);
+        drop(first_header);
+        let mut header = self.first_header.borrow_mut();
+        header.as_mut().unwrap().next_header = prev_last;
+    }
 }
 
 
