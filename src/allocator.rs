@@ -239,3 +239,19 @@ impl FirstFitAllocator {
         header.as_mut().unwrap().next_header = prev_last;
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    //use alloc::vec;
+
+    #[test_case]
+    fn malloc_iterate_free_and_alloc() {
+        use alloc::vec::Vec;
+        for i in 0..1000 {
+            let mut vec = Vec::new();
+            vec.resize(i, 10);
+            // vec will be deallocated at the end of this scope
+        }
+    }
+}
