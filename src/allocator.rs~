@@ -23,12 +23,6 @@ pub fn round_up_to_nearest_pow2(v: usize) -> Result<usize> {
         .checked_shl(usize::BITS - v.leading_zeros())
         .ok_or("Out of range")
 }
-
-#[test_case]
-fn round_up_to_nearest_pow2_tests() {
-    unimplemented!("cargo test should fail, right...?")
-}
-
 /// 垂直バー | は、ヘッダーを持つチャンクを表す
 /// before（変更前）: |– 前 —––|–– 自分 —————
 /// align（整列後）:  |––––|—––|—––|—––|—––|
