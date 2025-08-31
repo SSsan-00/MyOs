@@ -169,3 +169,34 @@ unsafe impl GlobalAlloc for FirstFitAllocator {
         // region is leaked here to avoid dropping the free info on the memory
     }
 }
+
+impl FirstFitAllocator {
+    pub fn alloc_with_options(&self, layout: Layout) -> *mut u8 {
+        let mut header = self.first_header.borrow_mut();
+        let mut header = header.daref_mut();
+
+        loop {
+            match header {
+                Some(e) => match e.provide(layout.size(), layout.align()) {
+                    Some(p) => break p,
+                    None => {
+                        header = e.next_header.borrow_mut();
+                        continue;
+                    }
+                },
+                None => {
+                    null_mut::<u8>();
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
