@@ -190,6 +190,15 @@ impl FirstFitAllocator {
             }
         }
     }
+
+    pub fn init_with_mmap(&self, memory_map: &MemoryMapHolder) {
+        for e in memory_map.iter() {
+            if e.memory_type() != EfiMemoryType::CONVENTIONAL_MEMORY {
+                continue;
+            }
+            self.add_free_from_description(e);
+        }
+    }
 }
 
 
