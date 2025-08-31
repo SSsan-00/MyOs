@@ -39,16 +39,16 @@ struct Header {
 const HEADER_SIZE: usize = size_of::<Header>();
 // 定数に対してのasserをclippyが警告するのを抑制
 #[allow(clippy::assertions_on_constants)]
-const _: () = assert!(HEADER_SIZE = 32);
+const _: () = assert!(HEADER_SIZE == 32);
 // HEADER_SIZEが2のべき乗であることを確認
 const _: () = assert!(HEADER_SIZE.count_ones() == 1);
 pub const LAYOUT_PAGE_4K: Layout =
     // サイズ4096バイト、アライメント4096バイト = 4KBページ
-    unsafe { Layout::from_usize_align_unchecked(4096, 4096) };
+    unsafe { Layout::from_size_align_unchecked(4096, 4096) };
 
 impl Header {
-    fn can_provide(&self, size: usize, align: useze) -> bool {
-        self.size >= size + HEADER_SIZE * 2 + align;
+    fn can_provide(&self, size: usize, align: usize) -> bool {
+        self.size >= size + HEADER_SIZE * 2 + align
     }
 
     fn is_allocated(&self) -> bool {
@@ -61,7 +61,7 @@ impl Header {
 
     unsafe fn new_from_addr(addr: usize) -> Box<Header> {
         let header = addr as *mut Header;
-        leader.write(Header {
+        header.write(Header {
             next_header: None,
             size: 0,
             is_allocated: false,
@@ -69,11 +69,15 @@ impl Header {
         });
         Box::from_raw(addr as *mut Header)
     }
+    unsafe fn from_allocated_region(addr: *mut u8) -> Box<Header> {
+        let header = addr.sub(HEADER_SIZE) as *mut Header;
+        Box::from_raw(header)
+    }
     // Note: std::alloc::Layout doc says:
     // > すべてのレイアウトは、対応するサイズと 2 のべき乗のアライメントを持つ。
     fn provide(&mut self, size: usize, align: usize) -> Option<*mut u8> {
         // max: 大きい方を返す
-        let size = max(round_ip_up_to_nearest_pow2(size).ok()?, HEADER_SIZE);
+        let size = max(round_up_to_nearest_pow2(size).ok()?, HEADER_SIZE);
         let align = max(align, HEADER_SIZE);
         if self.is_allocated() || !self.can_provide(size, align) {
             None
@@ -98,7 +102,7 @@ impl Header {
             // 割り当てられたオブジェクト用のヘッダを作成する
             let mut size_used = 0;
             let allocated_addr = (self.end_addr() - size) & !(align - 1);
-            let mut header_for_allocated = 
+            let mut header_for_allocated =
                 unsafe { Self::new_from_addr(allocated_addr - HEADER_SIZE) };
             header_for_allocated.is_allocated = true;
             header_for_allocated.size = size + HEADER_SIZE;
@@ -106,15 +110,12 @@ impl Header {
             header_for_allocated.next_header = self.next_header.take();
             if header_for_allocated.end_addr() != self.end_addr() {
                 // padding 用のヘッダを作成する
-                let mut header_for_padding = unsafe {
-                    Self::new_from_addr(header_for_allocated.end_addr())
-                };
+                let mut header_for_padding =
+                    unsafe { Self::new_from_addr(header_for_allocated.end_addr()) };
                 header_for_padding.is_allocated = false;
-                header_for_padding.size = 
-                    self.end_addr() - header_for_allocated.end_addr();
+                header_for_padding.size = self.end_addr() - header_for_allocated.end_addr();
                 size_used += header_for_padding.size;
-                header_for_padding.next_header = 
-                    header_for_allocated.next_header.take();
+                header_for_padding.next_header = header_for_allocated.next_header.take();
                 header_for_allocated.next_header = Some(header_for_padding);
             }
             // selfを縮小する
@@ -137,7 +138,7 @@ impl Drop for Header {
 impl fmt::Debug for Header {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
-            f, 
+            f,
             "Header @ {:#018} {{ size: {:#018X}, is_allocated: {} }}",
             self as *const Header as usize,
             self.size,
@@ -146,13 +147,13 @@ impl fmt::Debug for Header {
     }
 }
 
-pub struct  FirstFitAllocator {
-    firsr_header: RefCall<Option<Box<Header>>>,
+pub struct FirstFitAllocator {
+    first_header: RefCell<Option<Box<Header>>>,
 }
 
 #[global_allocator]
-pub static ALLOCATOR: firstFitAllocator = FirstFitAllocator {
-    first_header: RefCall::new(None),
+pub static ALLOCATOR: FirstFitAllocator = FirstFitAllocator {
+    first_header: RefCell::new(None),
 };
 
 unsafe impl Sync for FirstFitAllocator {}
@@ -173,7 +174,7 @@ unsafe impl GlobalAlloc for FirstFitAllocator {
 impl FirstFitAllocator {
     pub fn alloc_with_options(&self, layout: Layout) -> *mut u8 {
         let mut header = self.first_header.borrow_mut();
-        let mut header = header.daref_mut();
+        let mut header = header.deref_mut();
 
         loop {
             match header {
@@ -185,7 +186,7 @@ impl FirstFitAllocator {
                     }
                 },
                 None => {
-                    null_mut::<u8>();
+                    break null_mut::<u8>();
                 }
             }
         }
@@ -222,12 +223,3 @@ impl FirstFitAllocator {
         header.as_mut().unwrap().next_header = prev_last;
     }
 }
-
-
-
-
-
-
-
-
-
