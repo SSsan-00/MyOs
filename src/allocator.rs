@@ -268,4 +268,18 @@ mod test {
             }
         }
     }
+
+    #[test_case]
+    fn malloc_align_random_order() {
+        for align in [32, 4096, 8, 4, 16, 2, 1] {
+            let mut pointers = [null_mut::<u8>(); 100];
+            for e in pointers.iter_mut() {
+                *e = ALLOCATOR.alloc_with_options(
+                    Layout::from_size_align(1234, align).expect("Failed to create Layout"),
+                );
+                assert!(*e as usize != 0);
+                assert!((*e as usize) % align == 0);
+            }
+        }
+    }
 }
