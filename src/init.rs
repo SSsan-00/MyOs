@@ -1,3 +1,4 @@
+// 作業開始（後で消す）
 use crate::allocator::ALLOCATOR;
 use crate::uefi::exit_from_efi_boot_services;
 use crate::uefi::EfiHandle;
