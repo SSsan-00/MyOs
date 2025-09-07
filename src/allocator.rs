@@ -242,7 +242,7 @@ impl FirstFitAllocator {
 #[cfg(test)]
 mod test {
     use super::*;
-    //use alloc::vec;
+    use alloc::vec;
 
     #[test_case]
     fn malloc_iterate_free_and_alloc() {
@@ -321,6 +321,61 @@ mod test {
             Layout::from_size_align(60000, 64).unwrap(),
             Layout::from_size_align(60000, 64).unwrap(),
         ];
+
+        let mut pointers = vec![null_mut::<u8>(); allocations.len()];
+        for e in allocations.iter().zip(pointers.iter_mut()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            *pointer = ALLOCATOR.alloc_with_options(*layout);
+            for k in 0..layout.size() {
+                unsafe { *pointer.add(k) = i as u8 }
+            }
+        }
+        for e in allocations.iter().zip(pointers.iter_mut()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe { *pointer.add(k) } == i as u8);
+            }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .step_by(2)
+        {
+            let (_, (layout, pointer)) = e;
+            unsafe {
+                ALLOCATOR.dealloc(*pointer, *layout);
+            }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .skip(1)
+            .step_by(2)
+        {
+            let (i, (layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe { *pointer.add(k) } == i as u8);
+            }
+        }
+        for e in allocations
+            .iter()
+            .zip(pointers.iter_mut())
+            .enumerate()
+            .step_by(2)
+        {
+            let (i, (layout, pointer)) = e;
+            *pointer = ALLOCATOR.alloc_with_options(*layout);
+            for k in 0..layout.size() {
+                unsafe { *pointer.add(k) = i as u8 }
+            }
+        }
+        for e in allocations.iter().zip(pointers.iter_mut()).enumerate() {
+            let (i, (layout, pointer)) = e;
+            for k in 0..layout.size() {
+                assert!(unsafe { *pointer.add(k) } == i as u8);
+            }
+        }
     }
 }
-
