@@ -282,6 +282,45 @@ mod test {
         }
     }
 
-
+    #[test_case]
+    fn allocated_objects_have_no_overlap() {
+        let allocations = [
+            Layout::from_size_align(128, 128).unwrap(),
+            Layout::from_size_align(32, 32).unwrap(),
+            Layout::from_size_align(8, 8).unwrap(),
+            Layout::from_size_align(16, 16).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(4, 4).unwrap(),
+            Layout::from_size_align(2, 2).unwrap(),
+            Layout::from_size_align(600000, 64).unwrap(),
+            Layout::from_size_align(64, 64).unwrap(),
+            Layout::from_size_align(1, 1).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(3, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(600000, 64).unwrap(),
+            Layout::from_size_align(6000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+            Layout::from_size_align(60000, 64).unwrap(),
+        ];
+    }
 }
 
