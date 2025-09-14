@@ -10,6 +10,7 @@ use wasabi::graphics::draw_test_pattern;
 use wasabi::graphics::fill_rect;
 use wasabi::graphics::Bitmap;
 use wasabi::init::init_basic_runtime;
+use wasabi::print;
 use wasabi::qemu::exit_qemu;
 use wasabi::qemu::QemuExitCode;
 use wasabi::uefi::init_vram;
@@ -22,6 +23,9 @@ use wasabi::x86::hlt;
 // no_mangle: エントリポイントを正しく名前解決するために名前修飾を行わない
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
+    print!("Booting wasabiOS...\n");
+    print!("image_handle: {:#018X}\n", image_handle);
+    print!("efi_system_table: {:#p}\n", efi_system_table);
     let mut vram = init_vram(efi_system_table).expect("init_vram failed");
     let vw = vram.width();
     let vh = vram.height();

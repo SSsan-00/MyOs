@@ -13,4 +13,3 @@ pub fn init_basic_runtime(
     ALLOCATOR.init_with_mmap(&memory_map);
     memory_map
 }
-
