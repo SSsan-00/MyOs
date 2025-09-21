@@ -69,7 +69,6 @@ pub fn fill_rect<T: Bitmap>(
             }
         }
     }
-
     Ok(())
 }
 
